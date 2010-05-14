@@ -78,7 +78,7 @@ module Twitter
       text.scan(Twitter::Regex[:auto_link_composite_hashtags]) do |before, hash, hash_text|
         if hash_text.include? '.'
           result = []
-          hash_text.split('.').each { |composite_tag| result << (leading_character ? hash + composite_tag : composite_tag) }
+          hash_text.split(/\.+/).each { |composite_tag| result << (leading_character ? hash + composite_tag : composite_tag) }
         else
           result = leading_character ? hash + hash_text : hash_text
         end
