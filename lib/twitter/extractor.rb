@@ -56,7 +56,6 @@ module Twitter
     # If a block is given then it will be called for each hashtag.
     def extract_hashtags(text, leading_character = false) # :yields: hashtag_text
       return [] unless text
-
       tags = []
       text.scan(Twitter::Regex[:auto_link_hashtags]) do |before, hash, hash_text|
         hash_text = hash << hash_text if leading_character
@@ -75,7 +74,6 @@ module Twitter
     # If a block is given then it will be called for each hashtag (flattened)
     def extract_composite_hashtags(text, leading_character = false)
       return [] unless text
-
       tags = []
       text.scan(Twitter::Regex[:auto_link_composite_hashtags]) do |before, hash, hash_text|
         if hash_text.include? '.'
