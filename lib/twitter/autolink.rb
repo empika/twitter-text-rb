@@ -82,20 +82,13 @@ module Twitter
     # <tt>:hashtag_class</tt>:: class to add to hashtag <tt><a></tt> tags
     # <tt>:hashtag_url_base</tt>::      the value for <tt>href</tt> attribute. The hashtag text (minus the <tt>#</tt>) will be appended at the end of this.
     # <tt>:suppress_no_follow</tt>::   Do not add <tt>rel="nofollow"</tt> to auto-linked items
-    def auto_link_hashtags(text, options = {})  # :yields: hashtag_text
-      options = options.dup
-      options[:url_class] ||= DEFAULT_URL_CLASS
-      options[:hashtag_class] ||= DEFAULT_HASHTAG_CLASS
-      options[:hashtag_url_base] ||= "http://twitter.com/search?q=%23"
-      extra_html = HTML_ATTR_NO_FOLLOW unless options[:suppress_no_follow]
+    def auto_link_hashtags(text, options = {}, &block)  # :yields: hashtag_text
+      internal_link_hashtags(text, Twitter::Regex[:auto_link_hashtags], options)
+    end
 
-      text.gsub(Twitter::Regex[:auto_link_hashtags]) do
-        before = $1
-        hash = $2
-        text = $3
-        text = yield(text) if block_given?
-        "#{before}<a href=\"#{options[:hashtag_url_base]}#{text}\" title=\"##{text}\" class=\"#{options[:url_class]} #{options[:hashtag_class]}\"#{extra_html}>#{hash}#{text}</a>"
-      end
+    # Composite version of auto_link_hashtags
+    def auto_link_composite_hashtags(text, options = {}, &block)  # :yields: hashtag_text
+      internal_link_hashtags(text, Twitter::Regex[:auto_link_composite_hashtags], options)
     end
 
     # Add <tt><a></a></tt> tags around the URLs in the provided <tt>text</tt>. Any
@@ -111,6 +104,33 @@ module Twitter
         html_attrs = tag_options(options.stringify_keys) || ""
         full_url = (protocol =~ WWW_REGEX ? "http://#{url}" : url)
         "#{before}<a href=\"#{full_url}\"#{html_attrs}>#{url}</a>"
+      end
+    end
+    
+    private
+    
+    def internal_link_hashtags(text, regex, options = {}, &block)  # :yields: hashtag_text
+      options = options.dup
+      options[:url_class] ||= DEFAULT_URL_CLASS
+      options[:hashtag_class] ||= DEFAULT_HASHTAG_CLASS
+      extra_html = HTML_ATTR_NO_FOLLOW unless options[:suppress_no_follow]
+
+      text.gsub(regex) do
+        before = $1
+        hash = $2
+        text = $3
+        text = yield(text) if block_given?
+        
+        if text.include? '.'
+          url = ""
+          text.split(/\.+/).each do |ht|
+            url << "/" unless url.empty?
+            url << ht
+          end
+          "#{before}<a href=\"/#{url}\" title=\"##{text}\" class=\"#{options[:url_class]} #{options[:hashtag_class]}\"#{extra_html}>#{hash}#{text}</a>"
+        else
+          "#{before}<a href=\"/#{text}\" title=\"##{text}\" class=\"#{options[:url_class]} #{options[:hashtag_class]}\"#{extra_html}>#{hash}#{text}</a>"
+        end
       end
     end
 
