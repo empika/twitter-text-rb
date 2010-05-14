@@ -54,14 +54,39 @@ module Twitter
     # character.
     #
     # If a block is given then it will be called for each hashtag.
-    def extract_hashtags(text) # :yields: hashtag_text
+    def extract_hashtags(text, leading_character = false) # :yields: hashtag_text
       return [] unless text
 
       tags = []
       text.scan(Twitter::Regex[:auto_link_hashtags]) do |before, hash, hash_text|
+        hash_text = hash << hash_text if leading_character
         tags << hash_text
       end
       tags.each{|tag| yield tag } if block_given?
+      tags
+    end
+    
+    # Extracts a list of hashtags in the same manner as extract_hashtags.
+    # However, this method will also decompose composite hashtags:
+    # For example, <tt>#this.is.a.tag</tt> will generate as four tags.
+    # The result is a nested array. Use ".flatten" if you want a simple
+    # list.
+    #
+    # If a block is given then it will be called for each hashtag (flattened)
+    def extract_composite_hashtags(text, leading_character = false)
+      return [] unless text
+
+      tags = []
+      text.scan(Twitter::Regex[:auto_link_composite_hashtags]) do |before, hash, hash_text|
+        if hash_text.include? '.'
+          result = []
+          hash_text.split('.').each { |composite_tag| result << (leading_character ? hash + composite_tag : composite_tag) }
+        else
+          result = leading_character ? hash + hash_text : hash_text
+        end
+        tags << result
+      end
+      tags.flatten.each{|tag| yield tag } if block_given?
       tags
     end
 
