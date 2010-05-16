@@ -64,12 +64,12 @@ module Twitter
           # the link is a list
           text = list = "#{$3}#{$4}"
           text = yield(list) if block_given?
-          "#{$1}#{$2}<a class=\"#{options[:url_class]} #{options[:list_class]}\" href=\"#{options[:list_url_base]}#{list.downcase}\"#{extra_html}>#{text}</a>"
+          "#{$1}#{$2}<a class=\"#{options[:url_class]} #{options[:list_class]}\" title=\"#{text}\" href=\"#{options[:list_url_base]}#{list.downcase}\"#{extra_html}>#{text}</a>"
         else
           # this is a screen name
           text = $3
           text = yield(text) if block_given?
-          "#{$1}#{$2}<a class=\"#{options[:url_class]} #{options[:username_class]}\" href=\"#{options[:username_url_base]}#{text}\"#{extra_html}>#{text}</a>"
+          "#{$1}#{$2}<a class=\"#{options[:url_class]} #{options[:username_class]}\" title=\"#{text}\" href=\"#{options[:username_url_base]}#{text}\"#{extra_html}>#{text}</a>"
         end
       end
     end
@@ -109,6 +109,8 @@ module Twitter
     
     private
     
+    # Internal hashtag linking method. Used by the existing auto_link_hashtags method, 
+    # as well as the composite auto_link_composite_hashtags
     def internal_link_hashtags(text, regex, options = {}, &block)  # :yields: hashtag_text
       options = options.dup
       options[:url_class] ||= DEFAULT_URL_CLASS
