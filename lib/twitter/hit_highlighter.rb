@@ -5,6 +5,19 @@ module Twitter
   module HitHighlighter
     # Default Tag used for hit highlighting
     DEFAULT_HIGHLIGHT_TAG = "em"
+    
+    # Enhanced highlighter - takes a list of terms and highlights them
+    def hit_term_highlight(text, terms = [])
+      return text if terms.empty?
+      
+      # Trivial for now -- Should really be more careful as terms might theoretically clobber each other
+      terms.each do |term|
+        text = text.gsub(term) do |match|
+          "<em>" + match + "</em>"
+        end
+      end
+      text
+    end
 
     # Add <tt><em></em></tt> tags around the <tt>hits</tt> provided in the <tt>text</tt>. The
     # <tt>hits</tt> should be an array of (start, end) index pairs, relative to the original
