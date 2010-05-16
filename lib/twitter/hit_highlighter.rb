@@ -12,7 +12,7 @@ module Twitter
       
       # Trivial for now -- Should really be more careful as terms might theoretically clobber each other
       terms.each do |term|
-        text = text.gsub(term) do |match|
+        text = text.gsub(/#{term}/i) do |match|
           "<em>" + match + "</em>"
         end
       end
